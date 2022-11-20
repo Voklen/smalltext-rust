@@ -1,11 +1,12 @@
+use crate::throw;
+
 pub struct RunOptions {
-	interactive: bool,
-	convert_to: Converters,
+	pub interactive: bool,
+	pub convert_to: Option<Converters>,
 }
 
 #[derive(PartialEq)]
-enum Converters {
-	None,
+pub enum Converters {
 	Subscript,
 	Superscript,
 	Smallcaps,
@@ -18,12 +19,12 @@ enum Argument {
 	Smallcaps,
 }
 
-pub fn get_arguments() -> RunOptions {
+pub fn get_run_options() -> RunOptions {
 	// Skip the first argument because it's just the executable path
 	std::env::args().skip(1).map(parse_argument).fold(
 		RunOptions {
 			interactive: false,
-			convert_to: Converters::None,
+			convert_to: None,
 		},
 		add_argument,
 	)
@@ -68,23 +69,14 @@ fn add_argument(mut options: RunOptions, arg: Argument) -> RunOptions {
 }
 
 fn change_converter(mut options: RunOptions, new_converter: Converters) -> RunOptions {
-	if options.convert_to == Converters::None {
-		options.convert_to = new_converter;
+	if options.convert_to == None {
+		options.convert_to = Some(new_converter);
 		return options;
 	}
 
-	if options.convert_to != new_converter {
+	if options.convert_to != Some(new_converter) {
 		throw("Multiple converters selected")
 	} else {
 		options
 	}
-}
-
-pub fn throw<T>(error: &str) -> T {
-	let program_name = env!("CARGO_PKG_NAME");
-	println!("{program_name}: {error}");
-	#[cfg(not(debug_assertions))]
-	std::process::exit(1);
-	#[cfg(debug_assertions)]
-	panic!();
 }
