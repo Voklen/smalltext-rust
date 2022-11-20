@@ -1,8 +1,10 @@
+mod arguments;
 mod converters;
 
 use std::io;
 
 fn main() -> io::Result<()> {
+	let args = arguments::get_arguments;
 	let input = get_input()?;
 	let converted = convert(input);
 	println!("{converted}");
