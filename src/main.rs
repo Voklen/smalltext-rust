@@ -17,7 +17,7 @@ fn main() -> io::Result<()> {
 
 fn question_user_if_interactive(run_optoins: RunOptions) -> Converters {
 	if run_optoins.interactive {
-		interactive_questions()
+		interactive_questions(run_optoins)
 	} else {
 		match run_optoins.convert_to {
 			Some(x) => x,
@@ -26,8 +26,36 @@ fn question_user_if_interactive(run_optoins: RunOptions) -> Converters {
 	}
 }
 
-fn interactive_questions() -> Converters {
-	todo!()
+fn interactive_questions(run_optoins: RunOptions) -> Converters {
+	let converter = match run_optoins.convert_to {
+		Some(converter) => converter,
+		None => ask_converter(),
+	};
+	println!("Enter text to be converted:");
+	converter
+}
+
+fn ask_converter() -> Converters {
+	println!("Enter smalltext type to convert to (subscript, superscript, smallcaps)");
+	let input = match get_input() {
+		Ok(x) => x,
+		Err(_) => {
+			println!("Sorry, could not read input");
+			return ask_converter();
+		}
+	};
+	match input.to_ascii_lowercase().trim() {
+		"sub" => Converters::Subscript,
+		"subscript" => Converters::Subscript,
+		"super" => Converters::Superscript,
+		"superscript" => Converters::Superscript,
+		"small" => Converters::Smallcaps,
+		"smallcaps" => Converters::Smallcaps,
+		other_input => {
+			println!("\"{other_input}\" is not a valid converter type");
+			ask_converter()
+		}
+	}
 }
 
 fn get_input() -> io::Result<String> {
