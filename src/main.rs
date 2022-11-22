@@ -9,9 +9,12 @@ use converters::*;
 fn main() -> io::Result<()> {
 	let run_optoins = get_run_options();
 	let converter = question_user_if_interactive(run_optoins);
-	let input = get_input()?;
-	let converted = convert(input, converter);
-	println!("{converted}");
+	let input_lines = std::io::stdin().lines();
+	let line_to_smalltext = |x| -> io::Result<String> { Ok(convert(x?, &converter)) };
+	let output = input_lines.map(line_to_smalltext);
+	for line in output {
+		println!("{}", line?)
+	}
 	Ok(())
 }
 
@@ -65,7 +68,7 @@ fn get_input() -> io::Result<String> {
 	Ok(buffer)
 }
 
-fn convert(str: String, converter: Converters) -> String {
+fn convert(str: String, converter: &Converters) -> String {
 	let convert_yeah = match converter {
 		Converters::Subscript => |chr| convert_char(chr, &SUBSCRIPT),
 		Converters::Superscript => |chr| convert_char(chr, &SUPERSCRIPT),
