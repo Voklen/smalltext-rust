@@ -6,16 +6,15 @@ use std::io;
 use arguments::*;
 use converters::*;
 
-fn main() -> io::Result<()> {
+fn main() {
 	let run_optoins = get_run_options();
 	let converter = question_user_if_interactive(run_optoins);
-	let input_lines = std::io::stdin().lines();
-	let line_to_smalltext = |x| -> io::Result<String> { Ok(convert(x?, &converter)) };
-	let output = input_lines.map(line_to_smalltext);
+	let input_lines = io::stdin().lines();
+	let line_to_smalltext = |x| convert(x, &converter);
+	let output = input_lines.map(throw_errors).map(line_to_smalltext);
 	for line in output {
-		println!("{}", line?)
+		println!("{}", line)
 	}
-	Ok(())
 }
 
 fn question_user_if_interactive(run_optoins: RunOptions) -> Converters {
@@ -81,6 +80,17 @@ fn convert_char(character: char, converter: &phf::Map<char, char>) -> char {
 	match converter.get(&character) {
 		Some(super_character) => super_character.clone(),
 		None => character,
+	}
+}
+
+fn throw_errors<T>(value: io::Result<T>) -> T {
+	match value {
+		Ok(x) => x,
+		Err(err) => {
+			let error_string = err.to_string();
+			let error_message = format!("Error reading line: {error_string}");
+			throw(&error_message)
+		}
 	}
 }
 
