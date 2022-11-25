@@ -40,7 +40,7 @@ fn interactive_questions(arguments: RunArguments) -> Converters {
 fn get_converter(arguments: RunArguments) -> Converters {
 	match arguments.convert_to {
 		Some(x) => x,
-		None => throw("No converter specified and not running interactively"),
+		None => throw("No converter specified and not running interactively\nTry 'smalltext --help' for more information."),
 	}
 }
 
