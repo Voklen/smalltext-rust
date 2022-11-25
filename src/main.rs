@@ -2,39 +2,46 @@ mod arguments;
 mod converters;
 
 use std::io;
+use std::io::stdin;
 
 use arguments::*;
 use converters::*;
 
 fn main() {
-	let run_optoins = get_run_options();
-	let converter = question_user_if_interactive(run_optoins);
-	let input_lines = io::stdin().lines();
-	let line_to_smalltext = |x| convert(x, &converter);
-	let output = input_lines.map(throw_errors).map(line_to_smalltext);
-	for line in output {
-		println!("{}", line)
-	}
-}
-
-fn question_user_if_interactive(run_optoins: RunOptions) -> Converters {
-	if run_optoins.interactive {
-		interactive_questions(run_optoins)
+	// Imperative shell
+	let command_line_args = get_arguments();
+	let converter = if command_line_args.interactive {
+		interactive_questions(command_line_args)
 	} else {
-		match run_optoins.convert_to {
-			Some(x) => x,
-			None => throw("No converter specified and not running interactively"),
-		}
+		get_converter(command_line_args)
+	};
+	// Functional core
+	let line_to_smalltext = |x| convert(x, &converter);
+	let output = get_input_lines().map(line_to_smalltext);
+	// Imperative shell
+	for line in output {
+		println!("{line}")
 	}
 }
 
-fn interactive_questions(run_optoins: RunOptions) -> Converters {
-	let converter = match run_optoins.convert_to {
+fn get_input_lines() -> impl Iterator<Item = String> {
+	stdin().lines().map(throw_errors)
+}
+
+fn interactive_questions(arguments: RunArguments) -> Converters {
+	let converter = match arguments.convert_to {
 		Some(converter) => converter,
 		None => ask_converter(),
 	};
 	println!("Enter text to be converted:");
 	converter
+}
+
+fn get_converter(arguments: RunArguments) -> Converters {
+	match arguments.convert_to {
+		Some(x) => x,
+		None => throw("No converter specified and not running interactively"),
+	}
 }
 
 fn ask_converter() -> Converters {
@@ -62,7 +69,7 @@ fn ask_converter() -> Converters {
 
 fn get_input() -> io::Result<String> {
 	let mut buffer = String::new();
-	let stdin = io::stdin();
+	let stdin = stdin();
 	stdin.read_line(&mut buffer)?;
 	Ok(buffer)
 }
@@ -94,7 +101,7 @@ fn throw_errors<T>(value: io::Result<T>) -> T {
 	}
 }
 
-pub fn throw<T>(error: &str) -> T {
+pub fn throw(error: &str) -> ! {
 	let program_name = env!("CARGO_PKG_NAME");
 	println!("{program_name}: {error}");
 	#[cfg(not(debug_assertions))]
