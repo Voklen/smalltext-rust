@@ -3,6 +3,7 @@ use crate::throw;
 pub struct RunArguments {
 	pub interactive: bool,
 	pub convert_to: Option<Converters>,
+	pub files: Vec<String>,
 }
 
 #[derive(PartialEq)]
@@ -17,6 +18,7 @@ enum Argument {
 	Subscript,
 	Superscript,
 	Smallcaps,
+	File(String),
 }
 
 pub fn get_arguments() -> RunArguments {
@@ -25,13 +27,22 @@ pub fn get_arguments() -> RunArguments {
 		RunArguments {
 			interactive: false,
 			convert_to: None,
+			files: vec![],
 		},
 		add_argument,
 	)
 }
 
 fn parse_argument(argument: String) -> Argument {
-	match argument.as_str() {
+	if argument.starts_with('-') {
+		parse_dash_argument(&argument)
+	} else {
+		Argument::File(argument)
+	}
+}
+
+fn parse_dash_argument(argument: &str) -> Argument {
+	match argument {
 		"-i" => Argument::Interactive,
 		"--super" => Argument::Superscript,
 		"--sub" => Argument::Subscript,
@@ -74,7 +85,7 @@ fn print_help() -> ! {
 	std::process::exit(0)
 }
 
-fn print_invalid_argument(argument: String) -> ! {
+fn print_invalid_argument(argument: &str) -> ! {
 	let program_name = env!("CARGO_PKG_NAME");
 	let error_string = format!(
 		"invalid option -- '{argument}'\nTry '{program_name} --help' for more information."
@@ -86,6 +97,10 @@ fn add_argument(mut options: RunArguments, arg: Argument) -> RunArguments {
 	match arg {
 		Argument::Interactive => {
 			options.interactive = true;
+			options
+		}
+		Argument::File(filename) => {
+			options.files.push(filename);
 			options
 		}
 		Argument::Subscript => change_converter(options, Converters::Subscript),
