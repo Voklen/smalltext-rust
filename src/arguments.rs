@@ -1,12 +1,13 @@
 use crate::throw;
 
+#[derive(Clone)]
 pub struct RunArguments {
 	pub interactive: bool,
 	pub convert_to: Option<Converters>,
 	pub files: Vec<String>,
 }
 
-#[derive(PartialEq)]
+#[derive(Clone, PartialEq)]
 pub enum Converters {
 	Subscript,
 	Superscript,

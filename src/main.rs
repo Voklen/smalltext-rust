@@ -11,35 +11,51 @@ fn main() {
 	// Imperative shell
 	let command_line_args = get_arguments();
 	let converter = if command_line_args.interactive {
-		interactive_questions(command_line_args)
+		interactive_questions(&command_line_args)
 	} else {
-		get_converter(command_line_args)
+		get_converter(&command_line_args)
 	};
+	let input_lines = get_input_lines(command_line_args);
 	// Functional core
 	let line_to_smalltext = |x| convert(x, &converter);
-	let output = get_input_lines().map(line_to_smalltext);
+	let output = input_lines.into_iter().map(line_to_smalltext);
 	// Imperative shell
 	for line in output {
 		println!("{line}")
 	}
 }
 
-fn get_input_lines() -> impl Iterator<Item = String> {
-	stdin().lines().map(throw_errors)
+fn get_input_lines(arguments: RunArguments) -> Vec<String> {
+	if arguments.files.is_empty() {
+		return stdin().lines().map(throw_errors).collect();
+	}
+	arguments
+		.files
+		.into_iter()
+		.flat_map(|x| file_as_lines(x).into_iter())
+		.collect()
 }
 
-fn interactive_questions(arguments: RunArguments) -> Converters {
-	let converter = match arguments.convert_to {
-		Some(converter) => converter,
+fn file_as_lines(filename: String) -> Vec<String> {
+	std::fs::read_to_string(filename)
+		.unwrap()
+		.lines()
+		.map(|x| x.to_string())
+		.collect()
+}
+
+fn interactive_questions(arguments: &RunArguments) -> Converters {
+	let converter = match &arguments.convert_to {
+		Some(converter) => converter.clone(),
 		None => ask_converter(),
 	};
 	println!("Enter text to be converted:");
 	converter
 }
 
-fn get_converter(arguments: RunArguments) -> Converters {
-	match arguments.convert_to {
-		Some(x) => x,
+fn get_converter(arguments: &RunArguments) -> Converters {
+	match &arguments.convert_to {
+		Some(x) => x.clone(),
 		None => throw("No converter specified and not running interactively\nTry 'smalltext --help' for more information."),
 	}
 }
