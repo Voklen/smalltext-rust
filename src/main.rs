@@ -15,25 +15,33 @@ fn main() {
 	} else {
 		get_converter(&command_line_args)
 	};
-	let input_lines = get_input_lines(command_line_args);
-	// Functional core
-	let line_to_smalltext = |x| convert(x, &converter);
-	let output = input_lines.into_iter().map(line_to_smalltext);
-	// Imperative shell
-	for line in output {
-		println!("{line}")
+	if command_line_args.files.is_empty() {
+		let input_lines = stdin().lines().map(throw_errors);
+
+		// Functional core
+		let line_to_smalltext = |x| convert(x, &converter);
+		let output = input_lines.map(line_to_smalltext);
+		// Imperative shell
+		for line in output {
+			println!("{line}")
+		}
+	} else {
+		let input_lines = get_input_lines(command_line_args);
+		// Functional core
+		let line_to_smalltext = |x| convert(x, &converter);
+		let output = input_lines.map(line_to_smalltext);
+		// Imperative shell
+		for line in output {
+			println!("{line}")
+		}
 	}
 }
 
-fn get_input_lines(arguments: RunArguments) -> Vec<String> {
-	if arguments.files.is_empty() {
-		return stdin().lines().map(throw_errors).collect();
-	}
+fn get_input_lines(arguments: RunArguments) -> impl Iterator<Item = String> {
 	arguments
 		.files
 		.into_iter()
 		.flat_map(|x| file_as_lines(x).into_iter())
-		.collect()
 }
 
 fn file_as_lines(filename: String) -> Vec<String> {
@@ -49,7 +57,7 @@ fn interactive_questions(arguments: &RunArguments) -> Converters {
 		Some(converter) => converter.clone(),
 		None => ask_converter(),
 	};
-	println!("Enter text to be converted:");
+	println!("Enter text to be converted (ctrl-c to exit):");
 	converter
 }
 
