@@ -1,8 +1,9 @@
 mod arguments;
 mod converters;
 
-use std::io;
 use std::io::stdin;
+use std::io::{self, StdinLock};
+use std::vec::IntoIter;
 
 use arguments::*;
 use converters::*;
@@ -15,29 +16,47 @@ fn main() {
 	} else {
 		get_converter(&command_line_args)
 	};
-	if command_line_args.files.is_empty() {
-		let input_lines = stdin().lines().map(throw_errors);
-
-		// Functional core
-		let line_to_smalltext = |x| convert(x, &converter);
-		let output = input_lines.map(line_to_smalltext);
-		// Imperative shell
-		for line in output {
-			println!("{line}")
-		}
+	let input_lines = if command_line_args.files.is_empty() {
+		Lines::Stdin(get_lines_from_terminal())
 	} else {
-		let input_lines = get_input_lines(command_line_args);
-		// Functional core
-		let line_to_smalltext = |x| convert(x, &converter);
-		let output = input_lines.map(line_to_smalltext);
-		// Imperative shell
-		for line in output {
-			println!("{line}")
+		Lines::File(get_file_input_lines(command_line_args))
+	};
+	// Functional core
+	let line_to_smalltext = |x| convert(x, &converter);
+	let output = input_lines.map(line_to_smalltext);
+	// Imperative shell
+	for line in output {
+		println!("{line}")
+	}
+}
+
+type Stdin = std::iter::Map<
+	std::io::Lines<StdinLock<'static>>,
+	fn(Result<String, std::io::Error>) -> String,
+>;
+type File = std::iter::FlatMap<IntoIter<String>, IntoIter<String>, fn(String) -> IntoIter<String>>;
+
+enum Lines {
+	Stdin(Stdin),
+	File(File),
+}
+
+impl Iterator for Lines {
+	type Item = String;
+
+	fn next(&mut self) -> Option<Self::Item> {
+		match self {
+			Self::Stdin(iter) => iter.next(),
+			Self::File(iter) => iter.next(),
 		}
 	}
 }
 
-fn get_input_lines(arguments: RunArguments) -> impl Iterator<Item = String> {
+fn get_lines_from_terminal() -> Stdin {
+	stdin().lines().map(throw_errors)
+}
+
+fn get_file_input_lines(arguments: RunArguments) -> File {
 	arguments
 		.files
 		.into_iter()
