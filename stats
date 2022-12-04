@@ -1,0 +1,33 @@
+time ./target/release/smalltext --sub test.html
+
+test.html is at https://gist.github.com/Voklen/748cab73dfa41801f158f3ab72866614
+
+5a95b9113212907af686039ad6d0a190d48a0a93
+real	0m7.170s
+user	0m2.505s
+sys	0m2.390s
+real	0m7.187s
+user	0m2.468s
+sys	0m2.497s
+real	0m7.147s
+user	0m2.375s
+sys	0m2.501s
+Average:
+real	7.168s
+user	2.449s
+sys	2.463s
+
+8498de7ff23359d650a82c8e56d0e2ab7ce1532a
+real	0m7.202s
+user	0m2.534s
+sys	0m2.415s
+real	0m7.058s
+user	0m2.458s
+sys	0m2.337s
+real	0m7.233s
+user	0m2.397s
+sys	0m2.577s
+Average:
+real	7.164s
+user	2.463s
+sys	2.443s
