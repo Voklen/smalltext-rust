@@ -41,5 +41,5 @@ cargo install
 
 If it does not work you may need to add the Cargo bin directory to your PATH variable with:
 ```
-echo export PATH=~/.cargo/bin:$PATH >> ~/.bashrc
+echo "export PATH=~/.cargo/bin:\$PATH" >> ~/.bashrc
 ```
