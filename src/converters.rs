@@ -37,6 +37,11 @@ pub static SUBSCRIPT: phf::Map<char, char> = phf_map! {
 	'7' => '₇',
 	'8' => '₈',
 	'9' => '₉',
+	'+' => '₊',
+	'-' => '₋',
+	'=' => '₌',
+	'(' => '₍',
+	')' => '₎',
 };
 
 pub static SUPERSCRIPT: phf::Map<char, char> = phf_map! {
@@ -76,6 +81,11 @@ pub static SUPERSCRIPT: phf::Map<char, char> = phf_map! {
 	'7' => '⁷',
 	'8' => '⁸',
 	'9' => '⁹',
+	'+' => '⁺',
+	'-' => '⁻',
+	'=' => '⁼',
+	'(' => '⁽',
+	')' => '⁾',
 };
 
 pub static SMALLCAPS: phf::Map<char, char> = phf_map! {
