@@ -1,26 +1,18 @@
 mod arguments;
 mod converters;
+mod lines;
 
-use std::io::stdin;
-use std::io::{self, StdinLock};
-use std::vec::IntoIter;
+use std::io::{self, stdin};
 
 use arguments::*;
 use converters::*;
+use lines::*;
 
 fn main() {
 	// Imperative shell
 	let command_line_args = get_arguments();
-	let converter = if command_line_args.interactive {
-		interactive_questions(&command_line_args)
-	} else {
-		get_converter(&command_line_args)
-	};
-	let input_lines = if command_line_args.files.is_empty() {
-		Lines::Stdin(get_lines_from_terminal())
-	} else {
-		Lines::File(get_file_input_lines(command_line_args))
-	};
+	let converter = ask_or_get_converter(&command_line_args);
+	let input_lines = get_files_or_stdin(command_line_args);
 	// Functional core
 	let line_to_smalltext = |x| convert(x, &converter);
 	let output = input_lines.map(line_to_smalltext);
@@ -30,45 +22,20 @@ fn main() {
 	}
 }
 
-type Stdin = std::iter::Map<
-	std::io::Lines<StdinLock<'static>>,
-	fn(Result<String, std::io::Error>) -> String,
->;
-type File = std::iter::FlatMap<IntoIter<String>, IntoIter<String>, fn(String) -> IntoIter<String>>;
-
-enum Lines {
-	Stdin(Stdin),
-	File(File),
-}
-
-impl Iterator for Lines {
-	type Item = String;
-
-	fn next(&mut self) -> Option<Self::Item> {
-		match self {
-			Self::Stdin(iter) => iter.next(),
-			Self::File(iter) => iter.next(),
-		}
+fn ask_or_get_converter(arguments: &RunArguments) -> Converters {
+	if arguments.interactive {
+		interactive_questions(arguments)
+	} else {
+		get_converter(arguments)
 	}
 }
 
-fn get_lines_from_terminal() -> Stdin {
-	stdin().lines().map(throw_errors)
-}
-
-fn get_file_input_lines(arguments: RunArguments) -> File {
-	arguments
-		.files
-		.into_iter()
-		.flat_map(|x| file_as_lines(x).into_iter())
-}
-
-fn file_as_lines(filename: String) -> Vec<String> {
-	std::fs::read_to_string(filename)
-		.unwrap()
-		.lines()
-		.map(|x| x.to_string())
-		.collect()
+fn get_files_or_stdin(arguments: RunArguments) -> Lines {
+	if arguments.files.is_empty() {
+		Lines::stdin_lines()
+	} else {
+		Lines::file_lines(arguments)
+	}
 }
 
 fn interactive_questions(arguments: &RunArguments) -> Converters {
