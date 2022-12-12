@@ -79,9 +79,11 @@ fn print_help() -> ! {
 	println!();
 	println!("To use smalltext interactively launch it with:");
 	println!("	{program_name} -i");
+	println!("To convert a file to subscript use:");
+	println!("	{program_name} --sub <file>");
 	println!("Other arguments can still be used in interactive mode such as:");
 	println!("	{program_name} -i --sub");
-	println!("Text can be piped into here as well:");
+	println!("Text can even be piped in:");
 	println!("	cat foo | {program_name} --sub");
 	println!();
 	println!("Any questions email: <me@voklen.com>");
