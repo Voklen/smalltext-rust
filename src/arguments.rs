@@ -45,9 +45,12 @@ fn parse_argument(argument: String) -> Argument {
 fn parse_dash_argument(argument: &str) -> Argument {
 	match argument {
 		"-i" => Argument::Interactive,
+		"-v" => print_version_info(),
+		"-h" => print_help(),
 		"--super" => Argument::Superscript,
 		"--sub" => Argument::Subscript,
 		"--smallcaps" => Argument::Smallcaps,
+		"--interactive" => Argument::Interactive,
 		"--version" => print_version_info(),
 		"--help" => print_help(),
 		_ => print_invalid_argument(argument),
@@ -67,12 +70,12 @@ fn print_help() -> ! {
 	println!("Usage: {program_name} [OPTION]...");
 	println!("Convert text to smalltext");
 	println!();
-	println!("	-i              run in interactive mode");
-	println!("	    --sub       convert text to subscript");
-	println!("	    --super     convert text to superscript");
-	println!("	    --smallcaps convert text to smallcaps");
-	println!("	    --version   output version information and exit");
-	println!("	    --help      display this help and exit");
+	println!("	-i  --interactive run in interactive mode");
+	println!("	    --sub         convert text to subscript");
+	println!("	    --super       convert text to superscript");
+	println!("	    --smallcaps   convert text to smallcaps");
+	println!("	-v  --version     output version information and exit");
+	println!("	-h  --help        display this help and exit");
 	println!();
 	println!("To use smalltext interactively launch it with:");
 	println!("	{program_name} -i");
