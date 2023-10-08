@@ -93,10 +93,7 @@ fn print_help() -> ! {
 
 fn print_invalid_argument(argument: &str) -> ! {
 	let program_name = env!("CARGO_PKG_NAME");
-	let error_string = format!(
-		"invalid option -- '{argument}'\nTry '{program_name} --help' for more information."
-	);
-	throw(&error_string)
+	throw!("invalid option -- '{argument}'\nTry '{program_name} --help' for more information.")
 }
 
 fn add_argument(mut options: RunArguments, arg: Argument) -> RunArguments {
@@ -122,7 +119,7 @@ fn change_converter(mut options: RunArguments, new_converter: Converters) -> Run
 	}
 
 	if options.convert_to != Some(new_converter) {
-		throw("Multiple converters selected")
+		throw!("Multiple converters selected")
 	} else {
 		options
 	}

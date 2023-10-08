@@ -1,5 +1,6 @@
 mod arguments;
 mod converters;
+mod errors;
 mod lines;
 
 use std::io::{self, stdin};
@@ -50,7 +51,7 @@ fn interactive_questions(arguments: &RunArguments) -> Converters {
 fn get_converter(arguments: &RunArguments) -> Converters {
 	match &arguments.convert_to {
 		Some(x) => x.clone(),
-		None => throw("No converter specified and not running interactively\nTry 'smalltext --help' for more information."),
+		None => throw!("No converter specified and not running interactively\nTry 'smalltext --help' for more information."),
 	}
 }
 
@@ -104,18 +105,7 @@ fn throw_errors<T>(value: io::Result<T>) -> T {
 	match value {
 		Ok(x) => x,
 		Err(err) => {
-			let error_string = err.to_string();
-			let error_message = format!("Error reading line: {error_string}");
-			throw(&error_message)
+			throw!("Error reading line: {err}")
 		}
 	}
-}
-
-pub fn throw(error: &str) -> ! {
-	let program_name = env!("CARGO_PKG_NAME");
-	println!("{program_name}: {error}");
-	#[cfg(not(debug_assertions))]
-	std::process::exit(1);
-	#[cfg(debug_assertions)]
-	panic!();
 }
